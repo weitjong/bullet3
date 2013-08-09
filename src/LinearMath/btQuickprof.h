@@ -10,6 +10,7 @@
 // Credits: The Clock class was inspired by the Timer classes in 
 // Ogre (www.ogre3d.org).
 
+// Modified by Lasse Oorni for Urho3D
 
 
 #ifndef BT_QUICK_PROF_H
@@ -67,7 +68,8 @@ void btSetCustomLeaveProfileZoneFunc(btLeaveProfileZoneFunc* leaveFunc);
 
 
 //To disable built-in profiling, please comment out next line
-//#define BT_NO_PROFILE 1
+// Urho3D: built-in profiling disabled, since Urho3D has its own hierarchic profiler
+#define BT_NO_PROFILE 1
 #ifndef BT_NO_PROFILE
 //btQuickprofGetCurrentThreadIndex will return -1 if thread index cannot be determined, 
 //otherwise returns thread index in range [0..maxThreads]

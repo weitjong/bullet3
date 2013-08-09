@@ -13,6 +13,8 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
+// Modified by Lasse Oorni for Urho3D
+
 //#define COMPUTE_IMPULSE_DENOM 1
 //#define BT_ADDITIONAL_DEBUG
 
@@ -610,8 +612,9 @@ void btSequentialImpulseConstraintSolver::setupFrictionConstraint(btSolverConstr
 
 //		btScalar positionalError = 0.f;
 
+        // Urho3D: possible friction fix from https://github.com/bulletphysics/bullet3/commit/907ac49892ede3f4a3295f7cbd96759107e5fc0e
 		btScalar velocityError =  desiredVelocity - rel_vel;
-		btScalar velocityImpulse = velocityError * solverConstraint.m_jacDiagABInv;
+		btScalar velocityImpulse = velocityError * btScalar(solverConstraint.m_jacDiagABInv);
 		solverConstraint.m_rhs = velocityImpulse;
 		solverConstraint.m_rhsPenetration = 0.f;
 		solverConstraint.m_cfm = cfmSlip;
@@ -691,8 +694,9 @@ void btSequentialImpulseConstraintSolver::setupTorsionalFrictionConstraint(	btSo
 
 //		btScalar positionalError = 0.f;
 
-		btSimdScalar velocityError =  desiredVelocity - rel_vel;
-		btSimdScalar	velocityImpulse = velocityError * btSimdScalar(solverConstraint.m_jacDiagABInv);
+        // Urho3D: possible friction fix from https://github.com/bulletphysics/bullet3/commit/907ac49892ede3f4a3295f7cbd96759107e5fc0e
+		btScalar velocityError =  desiredVelocity - rel_vel;
+		btScalar velocityImpulse = velocityError * btScalar(solverConstraint.m_jacDiagABInv);
 		solverConstraint.m_rhs = velocityImpulse;
 		solverConstraint.m_cfm = cfmSlip;
 		solverConstraint.m_lowerLimit = -solverConstraint.m_friction;
@@ -1981,7 +1985,9 @@ btScalar btSequentialImpulseConstraintSolver::solveGroupCacheFriendlyFinish(btCo
 		}
 
 		constr->internalSetAppliedImpulse(solverConstr.m_appliedImpulse);
-		if (btFabs(solverConstr.m_appliedImpulse)>=constr->getBreakingImpulseThreshold())
+		// Urho3D: if constraint has infinity breaking threshold, do not break no matter what
+        btScalar breakingThreshold = constr->getBreakingImpulseThreshold();
+		if (breakingThreshold < SIMD_INFINITY && btFabs(solverConstr.m_appliedImpulse)>=breakingThreshold)
 		{
 			constr->setEnabled(false);
 		}
